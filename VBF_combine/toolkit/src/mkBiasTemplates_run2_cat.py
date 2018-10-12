@@ -116,18 +116,6 @@ def RooDraw(opts,can,C,S,x,rh,model,qPDF,zPDF,tPDF,archive,chi2_val,n_param,titl
 	model.plotOn(frametop,RooFit.Components(p1),RooFit.LineWidth(2),RooFit.LineColor(kBlack),RooFit.LineStyle(kDashed))
 #	model.plotOn(frametop,RooFit.Components(p2),RooFit.LineWidth(2),RooFit.LineColor(kBlue))
 #	model.plotOn(frametop,RooFit.Components(p3),RooFit.LineWidth(2),RooFit.LineColor(kGreen+1))
-#	h_func_new =model.createHistogram('h_model_new',x,Binning(opts.X[0],opts.X[1],NBINS[0]))
-#	h_data_new =rh.createHistogram('h_data_new',x,Binning(opts.X[0],opts.X[1],NBINS[0]))
-#	h_func_new.SetLineWidth(3)
-#	h_func_new.SetLineColor(2)
-#	h_func_new.Draw()
-#	print 'num bins ',h_func_new.GetNbinsX(), '  ',rh.GetNBinsX()
-#	hfunc = RooDataHist("tmp","tmp",RooArgList(x),h_func_new)
-#	hfunc.plotOn(frametop,RooFit.LineColor(kRed),RooFit.LineWidth(2),RooFit.LineStyle(kDashed))
-
-#	h_func_new.Draw("same")
-#	ks_new = h_func_new.KolmogorovTest(h_data_new,'NN')
-#	print 'ks = ', ks_new
 	frametop.GetXaxis().SetTitleSize(0)
 	frametop.GetXaxis().SetLabelSize(0)
 	frametop.GetYaxis().SetLabelSize(0.035)
@@ -269,9 +257,12 @@ def main():
 		can = TCanvas("canD_sel%s"%S.tag,"%s"%opts.function,600,600)
 #		can.Divide(2,2)
 ## Category loop
-#		for C in range(S.ncat):
-		if (1>0):
-			C=0
+		for C in range(S.ncat):
+#######################################
+### If you want to only make the plots of the bkg model for the lowest BDT categories, you can comment out the above loop and just put C=0
+#		if (1>0):  ##
+#			C=0
+######################################
 			Cp = C + sum([x for x in SC.ncats[0:iS]])
 			print C,Cp
 ####################################################################################################
@@ -380,7 +371,6 @@ def main():
 	  		model[N] = RooAddPdf("bkg_model_%s_CAT%d"%(opts.TF[iS],Cp),"bkg_model_%s_CAT%d"%(opts.TF[iS],Cp),RooArgList(zPDF[N],tPDF[N],qcd_pdf[N]),RooArgList(yZ[N],yT[N],yQ[N]))
 			
   ### Fit
-			print 'Inregral = ',Y[N].getVal()	
 	  		res   = model[N].fitTo(rh[N],RooFit.Save(),RooFit.Warnings(ROOT.kTRUE))
 			for gc in gcs_aux :
 				gc.Print()
@@ -389,13 +379,6 @@ def main():
 
 			chi2 = RooChi2Var("chi2", "chi2", model[N], rh[N])
 			chi2_val = chi2.getVal()
-			print 'Yields Z,Top,QCD: ', yZ[N].getVal(),yT[N].getVal(),yQ[N].getVal()
-			total_fitted_yield = yZ[N].getVal()+yT[N].getVal()+yQ[N].getVal()
-			h_data = rh[N].createHistogram('h_data',x)
-			h_func =model[N].createHistogram('h_model',x)
-			h_func.Scale(total_fitted_yield/h_func.Integral())
-			ks = h_func.KolmogorovTest(h_data,'NN')
-			print 'KS = ',ks
   ### Draw
   			RooDraw(opts,can,C,S,x,rh[N],model[N],qcd_pdf[N],zPDF[N],tPDF[N],archive,chi2_val,n_param,opts.function)
 		#	can.cd(C+1)
